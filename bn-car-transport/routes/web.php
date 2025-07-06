@@ -3,14 +3,14 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\QuoteController;
-use App\Http\Controllers\Admin\AdminController;
-use App\Http\Controllers\Admin\ServiceController as AdminServiceController;
-use App\Http\Controllers\Admin\TestimonialController as AdminTestimonialController;
-use App\Http\Controllers\Admin\GalleryController as AdminGalleryController;
-use App\Http\Controllers\Admin\QuoteRequestController as AdminQuoteRequestController;
-use App\Http\Controllers\Admin\PageController as AdminPageController;
-use App\Http\Controllers\Admin\SettingController as AdminSettingController;
+use App\Http\Controllers\Admin\ServiceController;
+use App\Http\Controllers\Admin\TestimonialController;
+use App\Http\Controllers\Admin\GalleryController;
+use App\Http\Controllers\Admin\QuoteRequestController;
+use App\Http\Controllers\Admin\PageController;
+use App\Http\Controllers\Admin\SettingController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admin\DashboardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -63,36 +63,43 @@ Route::middleware('auth')->group(function () {
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
     
     // Admin Dashboard
-    Route::get('/', [AdminController::class, 'index'])->name('dashboard');
-    Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard.index');
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     
     // Services Management
-    Route::resource('services', AdminServiceController::class);
-    Route::patch('services/{service}/toggle-status', [AdminServiceController::class, 'toggleStatus'])->name('services.toggle-status');
+    Route::resource('services', ServiceController::class);
+    Route::patch('services/{service}/toggle-status', [ServiceController::class, 'toggleStatus'])->name('services.toggle-status');
     
     // Testimonials Management
-    Route::resource('testimonials', AdminTestimonialController::class);
-    Route::patch('testimonials/{testimonial}/approve', [AdminTestimonialController::class, 'approve'])->name('testimonials.approve');
-    Route::patch('testimonials/{testimonial}/toggle-featured', [AdminTestimonialController::class, 'toggleFeatured'])->name('testimonials.toggle-featured');
+    Route::resource('testimonials', TestimonialController::class);
+    Route::patch('testimonials/{testimonial}/approve', [TestimonialController::class, 'approve'])->name('testimonials.approve');
+    Route::patch('testimonials/{testimonial}/toggle-featured', [TestimonialController::class, 'toggleFeatured'])->name('testimonials.toggle-featured');
     
     // Gallery Management
-    Route::resource('galleries', AdminGalleryController::class);
-    Route::patch('galleries/{gallery}/toggle-status', [AdminGalleryController::class, 'toggleStatus'])->name('galleries.toggle-status');
-    Route::patch('galleries/{gallery}/toggle-featured', [AdminGalleryController::class, 'toggleFeatured'])->name('galleries.toggle-featured');
+    Route::resource('galleries', GalleryController::class);
+    Route::patch('galleries/{gallery}/toggle-status', [GalleryController::class, 'toggleStatus'])->name('galleries.toggle-status');
+    Route::patch('galleries/{gallery}/toggle-featured', [GalleryController::class, 'toggleFeatured'])->name('galleries.toggle-featured');
+    Route::delete('galleries/bulk-delete', [GalleryController::class, 'bulkDelete'])->name('galleries.bulk-delete');
     
     // Quote Requests Management
-    Route::resource('quote-requests', AdminQuoteRequestController::class)->except(['create', 'store']);
-    Route::patch('quote-requests/{quoteRequest}/update-status', [AdminQuoteRequestController::class, 'updateStatus'])->name('quote-requests.update-status');
-    Route::post('quote-requests/{quoteRequest}/send-quote', [AdminQuoteRequestController::class, 'sendQuote'])->name('quote-requests.send-quote');
+    Route::resource('quote-requests', QuoteRequestController::class)->except(['create', 'store']);
+    Route::patch('quote-requests/{quoteRequest}/update-status', [QuoteRequestController::class, 'updateStatus'])->name('quote-requests.update-status');
+    Route::post('quote-requests/{quoteRequest}/send-quote', [QuoteRequestController::class, 'sendQuote'])->name('quote-requests.send-quote');
+    Route::post('quote-requests/{quoteRequest}/assign', [QuoteRequestController::class, 'assign'])->name('quote-requests.assign');
+    Route::get('quote-requests-stats', [QuoteRequestController::class, 'stats'])->name('quote-requests.stats');
     
     // Pages Management
-    Route::resource('pages', AdminPageController::class);
-    Route::patch('pages/{page}/toggle-status', [AdminPageController::class, 'toggleStatus'])->name('pages.toggle-status');
+    Route::resource('pages', PageController::class);
+    Route::patch('pages/{page}/toggle-status', [PageController::class, 'toggleStatus'])->name('pages.toggle-status');
     
     // Settings Management
-    Route::get('settings', [AdminSettingController::class, 'index'])->name('settings.index');
-    Route::post('settings', [AdminSettingController::class, 'update'])->name('settings.update');
-    Route::get('settings/{group}', [AdminSettingController::class, 'group'])->name('settings.group');
+    Route::get('settings', [SettingController::class, 'index'])->name('settings.index');
+    Route::get('settings/{group}', [SettingController::class, 'group'])->name('settings.group');
+    Route::post('settings', [SettingController::class, 'update'])->name('settings.update');
+    Route::post('settings/store', [SettingController::class, 'store'])->name('settings.store');
+    Route::delete('settings/{key}', [SettingController::class, 'destroy'])->name('settings.destroy');
+    Route::get('settings/export', [SettingController::class, 'export'])->name('settings.export');
+    Route::post('settings/import', [SettingController::class, 'import'])->name('settings.import');
+    Route::post('settings/reset', [SettingController::class, 'reset'])->name('settings.reset');
     
 });
 
